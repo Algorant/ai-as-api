@@ -1,8 +1,10 @@
 bin/
 lib/
+lib64/
 share/
 include/
-lib64/
+datasets/
+zips/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
