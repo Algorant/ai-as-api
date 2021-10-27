@@ -4,6 +4,7 @@ lib64/
 share/
 include/
 datasets/
+models/
 zips/
 
 # Byte-compiled / optimized / DLL files
