@@ -1,8 +1,10 @@
 import json
 import pathlib
+import numpy as np
 from fastapi import FastAPI
 from typing import Optional
 from tensorflow.keras.models import load_model
+from tensorflow.keras.preprocessing.sequence import pad_sequences
 from tensorflow.keras.preprocessing.text import tokenizer_from_json
 
 app = FastAPI()
@@ -19,6 +21,22 @@ AI_MODEL = None
 AI_TOKENIZER = None
 MODEL_METADATA = {}
 labels_legend_inverted = {}
+
+def predict(query:str):
+    # sequences
+    # pad sequences
+    # model.predict
+    # convert to labels
+    sequences = AI_TOKENIZER.texts_to_sequences([query])
+    maxlen = MODEL_METADATA.get('max_sequence') or 300
+    x_input = pad_sequences(sequences, maxlen=300)
+    preds_array = AI_MODEL.predict(x_input) #array of predictions
+    preds = preds_array[0]
+    top_idx_val = np.argmax(preds)
+    top_pred = { "label" : labels_legend_inverted[str(top_idx_val)], "confidence": float(preds[top_idx_val])}
+    labeled_preds = [{"label": labels_legend_inverted[str(i)], "confidence": float(x)} for i, x in enumerate(list(preds)) ]
+    print(labeled_preds)
+    return {"top": top_pred, "predictions": labeled_preds}
 
 
 
@@ -40,6 +58,5 @@ def on_startup():
 def read_index(q:Optional[str] = None):
     global AI_MODEL, MODEL_METADATA, labels_legend_inverted
     query = q or "hello world"
-    # predict(query)
-    print(AI_MODEL)
-    return {"query": query, **MODEL_METADATA, "labels":labels_legend_inverted,}
+    preds_dict = predict(query)
+    return {"query": query, "results": preds_dict,}
